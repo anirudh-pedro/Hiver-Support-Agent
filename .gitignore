@@ -1,0 +1,37 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Large datasets (twcs.csv is ~516MB, exceeding GitHub's 100MB limit)
+data/*.csv
+data/**/*.csv
+data/processed/*.jsonl
+data/**/*.jsonl
+
+# Preserve directory structure and reports
+!data/**/.gitkeep
+!data/processed/*.md
+!data/**/README.md
+
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+.env
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# IDEs, editors, and OS metadata
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
