@@ -6,32 +6,79 @@ __pycache__/
 # C extensions
 *.so
 
+# Distribution / packaging
+build/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+.coverage.*
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+htmlcov/
+.hypothesis/
+.tox/
+.nox/
+
+# Type checking & Linting
+.mypy_cache/
+.pyre/
+.pytype/
+.ruff_cache/
+
+# Environments and Secrets
+.env
+.env.*
+*.env
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
 # Large datasets (twcs.csv is ~516MB, exceeding GitHub's 100MB limit)
 data/*.csv
 data/**/*.csv
 data/processed/*.jsonl
 data/**/*.jsonl
 
-# Preserve directory structure and reports
+# Preserve directory structure, reports, and spot-check sheet
 !data/**/.gitkeep
 !data/processed/*.md
 !data/**/README.md
-
-# Virtual Environments
-.venv/
-venv/
-env/
-ENV/
-.env
+!data/processed/taxonomy_spotcheck.csv
 
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints
+
+# Logs and temporary files
+*.log
+logs/
+tmp/
+temp/
 
 # IDEs, editors, and OS metadata
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
 .DS_Store
 Thumbs.db
 desktop.ini
