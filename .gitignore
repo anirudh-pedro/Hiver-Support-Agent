@@ -58,11 +58,35 @@ data/**/*.csv
 data/processed/*.jsonl
 data/**/*.jsonl
 
-# Preserve directory structure, reports, and spot-check sheet
+# Preserve directory structure, reports, spot-check sheet, and golden eval set
 !data/**/.gitkeep
 !data/processed/*.md
 !data/**/README.md
 !data/processed/taxonomy_spotcheck.csv
+!data/golden/**
+data/golden/_*
+data/golden/.*
+!data/index/*.md
+!data/index/**/.gitkeep
+
+# Large generated retrieval index artifacts (FAISS index is ~93MB, metadata is ~25MB)
+data/index/*.faiss
+data/index/*.index
+data/index/*.bin
+data/index/*.npy
+data/index/*.npz
+data/index/*.pkl
+data/index/.chunks/
+data/index/*.jsonl
+
+# Scratch, models, and cache
+scratch/
+**/scratch/
+models/
+.cache/
+huggingface/
+.streamlit/secrets.toml
+.streamlit/*.local.toml
 
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints
