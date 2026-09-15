@@ -9,6 +9,7 @@ import logging
 import os
 import re
 import sys
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import asdict, dataclass
 from typing import Any, Dict, List, Optional, Tuple
@@ -42,7 +43,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 # Configurable default model
-DEFAULT_MODEL: str = os.getenv("LLM_MODEL") or ("openai/gpt-oss-120b" if (os.getenv("GROQ_API") or os.getenv("groq_api") or os.getenv("GROQ_API_KEY")) else "gpt-4o-mini")
+DEFAULT_MODEL: str = os.getenv("LLM_MODEL") or ("openai/gpt-oss-20b" if (os.getenv("GROQ_API") or os.getenv("groq_api") or os.getenv("GROQ_API_KEY")) else "gpt-4o-mini")
 
 
 @dataclass
@@ -56,36 +57,53 @@ class IntentResult:
         return asdict(self)
 
 
+def get_all_llm_clients() -> List[Tuple[Any, str]]:
+    """
+    Instantiates all configured LLM clients (supporting primary and secondary Groq keys).
+    Returns list of (client, model) tuples.
+    """
+    clients: List[Tuple[Any, str]] = []
+    groq_keys: List[str] = []
+    for k in ["groq_api", "GROQ_API", "GROQ_API_KEY", "groq_api_2", "GROQ_API_2", "GROQ_API_KEY_2"]:
+        val = os.getenv(k)
+        if val and val not in groq_keys:
+            groq_keys.append(val)
+
+    if groq_keys:
+        try:
+            from openai import OpenAI
+            base_url = os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1")
+            for key in groq_keys:
+                c = OpenAI(api_key=key, base_url=base_url, max_retries=0)
+                model = os.getenv("LLM_MODEL", "openai/gpt-oss-20b")
+                clients.append((c, model))
+        except Exception as exc:
+            logger.error("Failed to initialize Groq client: %s", exc)
+
+    # Check OpenAI credentials as fallback
+    openai_key = os.getenv("OPENAI_API_KEY")
+    if openai_key:
+        try:
+            from openai import OpenAI
+            base_url = os.getenv("OPENAI_BASE_URL")
+            c = OpenAI(api_key=openai_key, base_url=base_url) if base_url else OpenAI(api_key=openai_key)
+            model = os.getenv("LLM_MODEL", "gpt-4o-mini")
+            clients.append((c, model))
+        except Exception as exc:
+            logger.error("Failed to initialize OpenAI client: %s", exc)
+
+    return clients
+
+
 def get_llm_client() -> Tuple[Optional[Any], str]:
     """
     Instantiates an OpenAI-compatible client, detecting Groq or OpenAI credentials.
     Returns:
         (client, default_model_name)
     """
-    # 1. Check Groq credentials
-    groq_key = os.getenv("GROQ_API") or os.getenv("groq_api") or os.getenv("GROQ_API_KEY")
-    if groq_key:
-        try:
-            from openai import OpenAI
-            base_url = os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1")
-            client = OpenAI(api_key=groq_key, base_url=base_url)
-            model = os.getenv("LLM_MODEL", "openai/gpt-oss-120b")
-            return client, model
-        except Exception as exc:
-            logger.error("Failed to initialize Groq client: %s", exc)
-
-    # 2. Check OpenAI credentials
-    openai_key = os.getenv("OPENAI_API_KEY")
-    if openai_key:
-        try:
-            from openai import OpenAI
-            base_url = os.getenv("OPENAI_BASE_URL")
-            client = OpenAI(api_key=openai_key, base_url=base_url) if base_url else OpenAI(api_key=openai_key)
-            model = os.getenv("LLM_MODEL", "gpt-4o-mini")
-            return client, model
-        except Exception as exc:
-            logger.error("Failed to initialize OpenAI client: %s", exc)
-
+    all_clients = get_all_llm_clients()
+    if all_clients:
+        return all_clients[0]
     return None, DEFAULT_MODEL
 
 
@@ -194,12 +212,21 @@ def classify_intent(
         RuntimeError: If LLM call fails or rate limits persist without silent fallback.
     """
     turns = thread.get("turns", [])
-    if not turns:
-        return IntentResult(intent="other", confidence=0.0, reasoning="Empty thread with no turns.")
+    first_message = ""
+    if turns:
+        first_message = turns[0].get("text", "").strip()
+    elif "customer_message" in thread and thread["customer_message"]:
+        first_message = str(thread["customer_message"]).strip()
+    elif "full_thread_text" in thread and thread["full_thread_text"]:
+        for line in thread["full_thread_text"].splitlines():
+            if line.startswith("[Customer]:"):
+                first_message = line.replace("[Customer]:", "").strip()
+                break
+        if not first_message and thread["full_thread_text"].splitlines():
+            first_message = thread["full_thread_text"].splitlines()[0].strip()
 
-    first_message = turns[0].get("text", "").strip()
     if not first_message:
-        return IntentResult(intent="other", confidence=0.0, reasoning="Empty message content.")
+        return IntentResult(intent="other", confidence=0.0, reasoning="Empty message content or no turns.")
 
     brand_reply: Optional[str] = None
     if include_brand_reply and len(turns) > 1:
@@ -231,20 +258,29 @@ def classify_intent(
 
     for attempt in range(max_retries):
         try:
-            response = llm_client.chat.completions.create(
-                model=selected_model,
-                temperature=0.0,
-                messages=[
+            create_kwargs = {
+                "model": selected_model,
+                "temperature": 0.0,
+                "max_tokens": 250,
+                "messages": [
                     {"role": "system", "content": SYSTEM_PROMPT},
                     {"role": "user", "content": user_content},
                 ],
-                response_format={"type": "json_object"},
-            )
+            }
+            if "qwen" in selected_model.lower():
+                create_kwargs["response_format"] = {"type": "json_object"}
+
+            response = llm_client.chat.completions.create(**create_kwargs)
             raw_text = response.choices[0].message.content or ""
             if not raw_text.strip():
                 raise ValueError("Received empty response content from LLM.")
 
-            parsed = json.loads(raw_text)
+            # Robust JSON extraction
+            match = re.search(r"\{.*?\}", raw_text, re.DOTALL)
+            if match:
+                parsed = json.loads(match.group(0))
+            else:
+                parsed = json.loads(raw_text)
 
             assigned_intent = parsed.get("assigned_intent")
             if not assigned_intent:
@@ -277,7 +313,6 @@ def classify_intent(
                 sleep_time = backoff_delay
                 if "retry after" in error_str:
                     try:
-                        import re
                         m = re.search(r"retry after\s+([0-9.]+)", error_str)
                         if m:
                             sleep_time = float(m.group(1)) + 0.5
@@ -290,7 +325,6 @@ def classify_intent(
                     attempt + 1,
                     max_retries,
                 )
-                import time
                 time.sleep(sleep_time)
                 backoff_delay = min(backoff_delay * 2.0, 30.0)
                 continue
@@ -304,7 +338,6 @@ def classify_intent(
                     attempt + 1,
                     max_retries,
                 )
-                import time
                 time.sleep(1.0)
                 continue
 
@@ -315,7 +348,6 @@ def classify_intent(
                     exc,
                     backoff_delay,
                 )
-                import time
                 time.sleep(backoff_delay)
                 backoff_delay *= 1.5
                 continue

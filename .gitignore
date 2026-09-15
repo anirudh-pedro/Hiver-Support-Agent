@@ -1,12 +1,14 @@
-# Byte-compiled / optimized / DLL files
+# ==============================================================================
+# .gitignore - Hiver Support Agent
+# ==============================================================================
+
+# --- Python Bytecode & Optimization ---
 __pycache__/
 *.py[cod]
 *$py.class
-
-# C extensions
 *.so
 
-# Distribution / packaging
+# --- Distribution & Packaging ---
 build/
 dist/
 downloads/
@@ -22,7 +24,23 @@ wheels/
 .installed.cfg
 *.egg
 
-# Testing & Coverage
+# --- Environments & Secrets ---
+.env
+.env.*
+*.env
+*.pem
+*.key
+*.credentials
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.conda/
+.python-version
+
+# --- Testing, Coverage & Profiling ---
 .pytest_cache/
 .coverage
 .coverage.*
@@ -34,31 +52,39 @@ htmlcov/
 .hypothesis/
 .tox/
 .nox/
+*.lprof
 
-# Type checking & Linting
+# --- Type Checking & Linting ---
 .mypy_cache/
 .pyre/
 .pytype/
 .ruff_cache/
 
-# Environments and Secrets
-.env
-.env.*
-*.env
-.venv/
-venv/
-env/
-ENV/
-env.bak/
-venv.bak/
+# --- Jupyter Notebooks ---
+.ipynb_checkpoints
+*-checkpoint.ipynb
 
-# Large datasets (twcs.csv is ~516MB, exceeding GitHub's 100MB limit)
+# --- Streamlit & Web Frameworks ---
+.streamlit/secrets.toml
+.streamlit/*.local.toml
+
+# --- Large Datasets & Archives ---
+# twcs.csv is ~516MB (exceeds GitHub's 100MB file limit)
 data/*.csv
 data/**/*.csv
 data/processed/*.jsonl
 data/**/*.jsonl
+*.parquet
+*.feather
+*.h5
+*.hdf5
+*.tar
+*.tar.gz
+*.zip
+*.7z
+*.rar
 
-# Preserve directory structure, reports, spot-check sheet, and golden eval set
+# --- Whitelist Golden Sets, Guides & Preserved Metadata ---
 !data/**/.gitkeep
 !data/processed/*.md
 !data/**/README.md
@@ -68,8 +94,9 @@ data/golden/_*
 data/golden/.*
 !data/index/*.md
 !data/index/**/.gitkeep
+!data/results/**/.gitkeep
 
-# Large generated retrieval index artifacts (FAISS index is ~93MB, metadata is ~25MB)
+# --- FAISS Retrieval Index & Chunks ---
 data/index/*.faiss
 data/index/*.index
 data/index/*.bin
@@ -79,30 +106,53 @@ data/index/*.pkl
 data/index/.chunks/
 data/index/*.jsonl
 
-# Scratch, models, and cache
-scratch/
-**/scratch/
+# --- Model Weights & HuggingFace Caches ---
 models/
 .cache/
 huggingface/
-.streamlit/secrets.toml
-.streamlit/*.local.toml
+*.safetensors
+*.pt
+*.pth
+*.onnx
+*.tflite
 
-# Jupyter Notebook checkpoints
-.ipynb_checkpoints
-
-# Logs and temporary files
-*.log
-logs/
+# --- Scratchpads, Working Scripts & Temporary Files ---
+scratch/
+**/scratch/
 tmp/
 temp/
-
-# IDEs, editors, and OS metadata
-.vscode/
-.idea/
+*.tmp
+*.bak
 *.swp
 *.swo
 *~
+
+# --- Logging ---
+*.log
+logs/
+
+# --- IDEs & Editors ---
+.vscode/
+.idea/
+.cursor/
+.windsurf/
+.zed/
+*.sublime-project
+*.sublime-workspace
+
+# --- Operating System Files ---
+# macOS
 .DS_Store
+.AppleDouble
+.LSOverride
+# Windows
 Thumbs.db
-desktop.ini
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# --- Agent / AI Tool Metadata ---
+.gemini/
+.agents/

@@ -1,0 +1,31 @@
+thread_id,tone_empathy,factual_correctness,completeness,safety_privacy,overall_score,notes
+2033438,4,4,3,5,4.0,Good tone and secure contact link; misses specific mention of Account Specialist escalation.
+393546,4,5,4,5,4.5,Helpful guidance with unauthenticated security report link.
+257809,4,4,3,5,4.0,Standard empathetic redirect without credential breach.
+348494,4,4,3,5,4.0,Polite redirect; does not address specific replacement-vs-refund policy conflict directly.
+280455,4,4,3,5,4.0,Appropriate empathy and secure form redirect.
+2300800,4,4,4,5,4.25,Directs to phone support for complex closed-account dispute.
+450792,4,5,4,5,4.5,Excellent privacy warning regarding public order ID and secure channel link.
+420552,4,4,3,5,4.0,Short polite DM redirect.
+2829429,4,4,3,5,4.0,Covers inquiry and support channel.
+576057,5,5,5,5,5.0,"Warm, engaging, perfect brand tone."
+2697207,5,5,5,5,5.0,"Compassionate, warm, and highly professional."
+74675,1,1,1,5,2.0,Empty draft string due to generation failure; completely incomplete.
+64184,5,5,4,5,4.75,Warm conversational response.
+264393,4,4,3,5,4.0,Reminds user not to post PII and provides secure channel.
+826272,4,4,3,5,4.0,Addresses damage and links to support.
+932729,4,5,4,5,4.5,Directly answers the policy question regarding code validity.
+2897520,4,3,2,5,3.5,Generic redirect that does not resolve the specific Pass My Parcel barcode store issue.
+86211,3,3,2,5,3.25,Standard boilerplate macro.
+2794310,4,4,3,5,4.0,Enthusiastic tone; could have provided direct Amazon Flex portal URL.
+1229661,3,3,2,5,3.25,Fallback macro; misses direct self-service returns guidance.
+2229039,4,4,3,5,4.0,Requests details in DM to initiate warranty check.
+1185795,4,3,2,5,3.5,Polite redirect for high-escalation thread.
+2159226,3,3,2,5,3.25,Contains placeholder URL (xxxx) which impairs usability.
+2416382,1,1,1,5,2.0,Empty draft string due to rate limit fallback.
+886168,4,4,4,5,4.25,Addresses the specific account-hold situation accurately.
+281936,4,4,3,5,4.0,Empathetic acknowledgment of the drawn-out delay.
+2967771,4,4,4,5,4.25,De-escalates calmly without defensive tone.
+1315843,4,4,3,5,4.0,Standard resolution pathway.
+1996341,4,4,3,5,4.0,Directs to seller support channels.
+1521769,4,4,4,5,4.25,Empathetic and addresses both delayed packages.

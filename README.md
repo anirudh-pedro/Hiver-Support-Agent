@@ -59,3 +59,13 @@ Each thread is formatted as a single JSON object per line in `data/processed/thr
 ```
 
 See [data/processed/ingest_report.md](data/processed/ingest_report.md) for the complete attrition funnel and statistics.
+
+---
+
+### Streamlit Demo
+
+Run the interactive web application to test single queries with full intent classification, semantic retrieval, grounded drafting, and hybrid escalation routing:
+
+```bash
+streamlit run src/streamlit_app.py
+```
