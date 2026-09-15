@@ -85,13 +85,21 @@ A blind human audit of 30 stratified threads was evaluated against the LLM Judge
 ## 3. Failure Analysis: Top 5 Failure Modes
 
 ```mermaid
-graph TD
-    A[Inbound Customer Message] --> B{Failure Mode Trigger}
-    B -->|Tone vs Defect Boundary| C1[Misclassifies Venting vs Order Defect]
-    B -->|Single-Turn Isolation| C2[Misses Multi-Turn Progression Context]
-    B -->|Model Quota Fallback| C3[Degrades to Static Offline Fallback]
-    B -->|Redirect Grounding| C4[Drafts Generic DM Hand-off Link]
-    B -->|Twitter Brevity Constraint| C5[Penalized on Completeness Rubric]
+flowchart TD
+    A["Inbound Customer Message"] --> B{"Failure Mode Trigger"}
+    B -->|"1. Tone vs. Defect"| C1["Misclassifies Venting vs. Order Defect"]
+    B -->|"2. Single-Turn Isolation"| C2["Misses Multi-Turn Progression Context"]
+    B -->|"3. Quota Fallback"| C3["Degrades to Generic Static Template"]
+    B -->|"4. Redirect Grounding"| C4["Drafts Generic DM Hand-off Link"]
+    B -->|"5. Twitter Brevity"| C5["Penalized by Completeness Rubric"]
+
+    style A fill:#f8f9fa,stroke:#6c757d,stroke-width:2px
+    style B fill:#fff3cd,stroke:#ffeeba,stroke-width:2px
+    style C1 fill:#f8d7da,stroke:#f5c6cb,stroke-width:1px
+    style C2 fill:#f8d7da,stroke:#f5c6cb,stroke-width:1px
+    style C3 fill:#f8d7da,stroke:#f5c6cb,stroke-width:1px
+    style C4 fill:#f8d7da,stroke:#f5c6cb,stroke-width:1px
+    style C5 fill:#f8d7da,stroke:#f5c6cb,stroke-width:1px
 ```
 
 ### Failure Mode 1: Tone/Venting vs. Concrete-Defect Boundary Confusion

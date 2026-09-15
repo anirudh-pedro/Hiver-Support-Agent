@@ -93,29 +93,34 @@ streamlit run src/streamlit_app.py
 
 ## 🏗️ Architecture & Pipeline Flow
 
-```
-[ Inbound Tweet / Thread ]
-            │
-            ▼
- 1. Intent Classification (src/intents.py)
-    └── 9-class grounded operational taxonomy (62.7% multi-turn acc, 86.7% single-turn)
-            │
-            ▼
- 2. Dense Semantic Grounding (src/retrieve.py)
-    └── FAISS FlatIP + all-MiniLM-L6-v2 over 60,355 verified AmazonHelp QA pairs
-            │
-            ▼
- 3. Grounded Twitter Reply Drafting (src/draft_reply.py)
-    └── Concise, polite, under 280-char limit, grounded in historical URLs/macros
-            │
-            ▼
- 4. 3-Layer Hybrid Escalation Routing (src/route.py)
-    ├── Layer 1: Deterministic Safety Regex Rules (Security, Billing, PII, Legal)
-    ├── Layer 2: Low-Confidence Fallback (Intent Confidence <= 0.65)
-    └── Layer 3: LLM Policy Judgment (Multi-turn sentiment, broken promises)
-            │
-            ▼
-[ Outcome: AUTO-HANDLE vs. ESCALATE (with named rule/reason) ]
+```mermaid
+flowchart TD
+    Inbound["📥 Inbound Tweet / Thread"] --> Step1["🏷️ 1. Intent Classification<br/><i>(src/intents.py)</i><br/>9-Class Grounded Taxonomy"]
+    
+    Step1 --> Step2["🔍 2. Dense Semantic Retrieval<br/><i>(src/retrieve.py)</i><br/>FAISS FlatIP + all-MiniLM-L6-v2<br/>60,355 Verified QA Pairs"]
+    
+    Step1 --> Routing{"🚦 4. Hybrid Escalation Routing<br/><i>(src/route.py)</i>"}
+    Step2 --> Step3["✍️ 3. Grounded Reply Drafting<br/><i>(src/draft_reply.py)</i><br/>Brand Voice & 280-Char Twitter Limit"]
+    
+    subgraph SafetyPolicy["4. 3-Layer Hybrid Escalation Routing"]
+        Routing --> Rule1["🛡️ Layer 1: Deterministic Safety Rules<br/><i>(Security, Billing, PII, Legal)</i>"]
+        Routing --> Rule2["⚠️ Layer 2: Low-Confidence Fallback<br/><i>(Intent Confidence &le; 0.65)</i>"]
+        Routing --> Rule3["🤖 Layer 3: LLM Policy Judgment<br/><i>(Multi-Turn Sentiment & Context)</i>"]
+    end
+
+    Rule1 --> Escalate["🚨 ESCALATE TO HUMAN<br/><i>(With Named Safety Rule / Reason)</i>"]
+    Rule2 --> Escalate
+    Rule3 --> Escalate
+    Rule3 --> AutoHandle["✅ AUTO-HANDLE BY AI<br/><i>(Dispatch Grounded Reply)</i>"]
+    Step3 --> AutoHandle
+
+    style Inbound fill:#f8f9fa,stroke:#6c757d,stroke-width:2px
+    style Step1 fill:#e8f4fd,stroke:#1a73e8,stroke-width:2px
+    style Step2 fill:#e8f4fd,stroke:#1a73e8,stroke-width:2px
+    style Step3 fill:#e8f4fd,stroke:#1a73e8,stroke-width:2px
+    style SafetyPolicy fill:#fffdf0,stroke:#d4a017,stroke-width:1px
+    style Escalate fill:#f8d7da,stroke:#f5c6cb,stroke-width:2px,color:#721c24
+    style AutoHandle fill:#d4edda,stroke:#c3e6cb,stroke-width:2px,color:#155724
 ```
 
 ---
