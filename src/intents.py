@@ -267,7 +267,7 @@ def classify_intent(
                     {"role": "user", "content": user_content},
                 ],
             }
-            if "qwen" in selected_model.lower():
+            if selected_model and "qwen" in selected_model.lower():
                 create_kwargs["response_format"] = {"type": "json_object"}
 
             response = llm_client.chat.completions.create(**create_kwargs)
@@ -282,7 +282,7 @@ def classify_intent(
             else:
                 parsed = json.loads(raw_text)
 
-            assigned_intent = parsed.get("assigned_intent")
+            assigned_intent = parsed.get("assigned_intent") or parsed.get("intent")
             if not assigned_intent:
                 raise ValueError(f"Missing 'assigned_intent' key in LLM response: {raw_text}")
 

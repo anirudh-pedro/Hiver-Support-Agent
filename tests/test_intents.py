@@ -226,10 +226,43 @@ def test_classify_intent_with_brand_reply():
     assert res_with.intent == "delivery_delay"
 
 
-def test_classify_intents_batch():
-    """Verifies batch execution preserves input ordering and thread count."""
+def test_classify_intents_batch(monkeypatch):
+    """Verifies batch execution preserves input ordering and thread count with mock client."""
+    from unittest.mock import MagicMock
+    import json
+
+    mock_client = MagicMock()
+    # Create responses matching each expected case
+    def mock_create(*args, **kwargs):
+        messages = kwargs.get("messages", [])
+        prompt_content = messages[1]["content"] if len(messages) > 1 else ""
+        
+        # Match test thread contents to expected intent
+        matched_intent = "delivery_delay"
+        for case in TEST_THREADS:
+            txt = case["thread"]["turns"][0]["text"]
+            if txt in prompt_content:
+                matched_intent = case["expected_intent"]
+                break
+        
+        mock_resp = MagicMock()
+        mock_resp.choices = [
+            MagicMock(
+                message=MagicMock(
+                    content=json.dumps({
+                        "assigned_intent": matched_intent,
+                        "confidence": 0.95,
+                        "justification": "Mocked test reasoning",
+                    })
+                )
+            )
+        ]
+        return mock_resp
+
+    mock_client.chat.completions.create.side_effect = mock_create
+
     threads = [case["thread"] for case in TEST_THREADS]
-    results = classify_intents_batch(threads, max_workers=4)
+    results = classify_intents_batch(threads, max_workers=2, client=mock_client)
 
     assert len(results) == len(threads)
     for res, case in zip(results, TEST_THREADS):
@@ -244,3 +277,4 @@ def test_empty_thread():
     res = classify_intent(empty_thread)
     assert res.intent == "other"
     assert res.confidence == 0.0
+
